@@ -180,11 +180,13 @@ function init(){
   }
 }
 
+let _editing=false;let _editTimer=null;
+function startEditing(){_editing=true;clearTimeout(_editTimer);_editTimer=setTimeout(function(){_editing=false;},3000);}
 function loadData(){
-  dbOn("days",function(v){if(v)S.days=v;render();});
-  dbOn("joins",function(v){if(v)S.joins=v;render();});
+  dbOn("days",function(v){if(v&&!_editing){S.days=v;render();}});
+  dbOn("joins",function(v){if(v){S.joins=v;if(!_editing)render();}});
 }
-function saveDays(){dbSet("days",S.days);}
+function saveDays(){startEditing();dbSet("days",S.days);}
 function saveJoins(){dbSet("joins",S.joins);}
 
 function doLogin(){
