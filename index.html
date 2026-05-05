@@ -118,39 +118,17 @@ function pd(s){const p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2]);}
 function fd(d){return DW[d.getDay()]+", "+MN[d.getMonth()]+" "+d.getDate();}
 function dkey(mo,d){return"2026-"+String(mo+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");}
 
-const DD={
-"2026-06-15":[{id:uid(),t:"Arrival Day",ty:"sf",a:[{tx:"Arrive in San Francisco",tm:"",ic:""},{tx:"Settle in and rest",tm:"",ic:""}],s:"San Francisco",tip:""}],
-"2026-06-16":[{id:uid(),t:"San Francisco",ty:"sf",a:[{tx:"Exploring SF",tm:"",ic:""}],s:"San Francisco",tip:""}],
-"2026-06-17":[{id:uid(),t:"San Francisco",ty:"sf",a:[{tx:"Exploring SF",tm:"",ic:""}],s:"San Francisco",tip:""}],
-"2026-06-18":[{id:uid(),t:"San Francisco",ty:"sf",a:[{tx:"Exploring SF",tm:"",ic:""}],s:"San Francisco",tip:""}],
-"2026-06-19":[{id:uid(),t:"World Cup: Turkiye vs Paraguay",ty:"ev",a:[{tx:"FIFA World Cup Group D",tm:"",ic:"⚽"},{tx:"Levis Stadium, Santa Clara",tm:"8:00 PM",ic:""}],s:"San Francisco",tip:"Caltrain from SF ~1 hr"}],
-"2026-06-20":[{id:uid(),t:"Monterey Bay Day Trip",ty:"tr",a:[{tx:"Drive to Monterey",tm:"Morning",ic:"🚗"},{tx:"Whale watching",tm:"",ic:"🐋"},{tx:"Monterey Bay Aquarium",tm:"",ic:""},{tx:"17-Mile Drive",tm:"Afternoon",ic:""}],s:"San Francisco",tip:"Book whale watching in advance!"}],
-"2026-06-21":[{id:uid(),t:"BBQ Party + Diljit Dosanjh",ty:"ev",a:[{tx:"Host BBQ party",tm:"Day",ic:"🎉"},{tx:"Diljit Dosanjh concert",tm:"Evening",ic:"🎶"}],s:"San Francisco",tip:""}],
-"2026-06-22":[{id:uid(),t:"San Francisco",ty:"sf",a:[{tx:"Exploring SF",tm:"",ic:""}],s:"San Francisco",tip:""}],
-"2026-06-23":[{id:uid(),t:"San Francisco",ty:"sf",a:[{tx:"Exploring SF",tm:"",ic:""}],s:"San Francisco",tip:""}],
-"2026-06-24":[{id:uid(),t:"Drive to Joshua Tree",ty:"dr",a:[{tx:"Drive SF to Joshua Tree (~7 hrs)",tm:"Morning",ic:"🚗"},{tx:"Desert scenery through Mojave",tm:"",ic:""}],s:"Joshua Tree area",tip:"Long drive. Leave early!"}],
-"2026-06-25":[{id:uid(),t:"Joshua Tree + Stargazing",ty:"pk",a:[{tx:"Keys View sunrise",tm:"Early AM",ic:""},{tx:"Cholla Cactus Garden",tm:"",ic:""},{tx:"Boulder formations",tm:"",ic:""},{tx:"Stargazing under Milky Way",tm:"Night",ic:"⭐"}],s:"",tip:"Book a stargazing tour!"},{id:uid(),t:"Drive to LA",ty:"dr",a:[{tx:"Drive to Los Angeles",tm:"Evening",ic:"🚗"}],s:"Los Angeles",tip:""}],
-"2026-06-26":[{id:uid(),t:"LA Sightseeing then Anaheim",ty:"tr",a:[{tx:"Hollywood Walk of Fame",tm:"",ic:"🎬"},{tx:"The Getty Center (free!)",tm:"",ic:""},{tx:"Grand Central Market lunch",tm:"",ic:"🍴"},{tx:"Drive to Anaheim",tm:"Evening",ic:"🚗"}],s:"Anaheim",tip:"Getty is free, parking $20"}],
-"2026-06-27":[{id:uid(),t:"Disneyland Day 1!",ty:"ev",a:[{tx:"Disneyland Park full day!",tm:"",ic:"🏰"},{tx:"Rides, shows, parades",tm:"",ic:""},{tx:"Fireworks spectacular",tm:"Night",ic:"🎆"}],s:"Anaheim",tip:"Download Disneyland app"}],
-"2026-06-28":[{id:uid(),t:"Disneyland 2 + Drive Home",ty:"dr",a:[{tx:"Disney California Adventure",tm:"Morning",ic:"🏰"},{tx:"Cars Land, Avengers Campus",tm:"",ic:""},{tx:"Drive back to SF (~6 hrs)",tm:"Afternoon",ic:"🚗"}],s:"San Francisco",tip:"Leave by early afternoon"}],
-"2026-06-29":[{id:uid(),t:"Recovery Day",ty:"rs",a:[{tx:"Rest and recover",tm:"",ic:""}],s:"San Francisco",tip:""}],
-"2026-06-30":[{id:uid(),t:"San Francisco",ty:"sf",a:[{tx:"Exploring SF",tm:"",ic:""}],s:"San Francisco",tip:""}],
-"2026-07-01":[{id:uid(),t:"San Francisco",ty:"sf",a:[{tx:"Exploring SF",tm:"",ic:""}],s:"San Francisco",tip:""}],
-"2026-07-02":[{id:uid(),t:"San Francisco",ty:"sf",a:[{tx:"Exploring SF",tm:"",ic:""}],s:"San Francisco",tip:""}],
-"2026-07-03":[{id:uid(),t:"Napa Valley + Wedding",ty:"ev",a:[{tx:"Drive to Napa",tm:"Morning",ic:"🚗"},{tx:"Oxbow Market, wine tasting",tm:"",ic:"🍷"},{tx:"Castello di Amorosa",tm:"",ic:""},{tx:"Optional: Calistoga mud bath",tm:"",ic:"♨️"},{tx:"Wedding celebrations",tm:"Evening",ic:"🎉"}],s:"San Francisco",tip:"Calistoga mud baths - book ahead"}],
-"2026-07-04":[{id:uid(),t:"Independence Day + Wedding",ty:"ev",a:[{tx:"Independence Day events",tm:"Morning",ic:"🇺🇸"},{tx:"Wedding celebrations",tm:"Afternoon",ic:"🎉"},{tx:"Fireworks at Crissy Field",tm:"Night",ic:"🎆"}],s:"San Francisco",tip:"Arrive Crissy Field by 7 PM"}],
-"2026-07-05":[{id:uid(),t:"American River Rafting",ty:"tr",a:[{tx:"Drive to Sacramento",tm:"Morning",ic:"🚗"},{tx:"River rafting Class I-II",tm:"",ic:"🚣"},{tx:"Old Sacramento",tm:"Afternoon",ic:""},{tx:"Drive back to SF",tm:"Evening",ic:"🚗"}],s:"San Francisco",tip:"Book outfitter ahead"}],
-"2026-07-06":[{id:uid(),t:"San Francisco",ty:"sf",a:[{tx:"Exploring SF",tm:"",ic:""}],s:"San Francisco",tip:""}],
-"2026-07-07":[{id:uid(),t:"San Francisco",ty:"sf",a:[{tx:"Exploring SF",tm:"",ic:""}],s:"San Francisco",tip:""}],
-"2026-07-08":[{id:uid(),t:"San Francisco",ty:"sf",a:[{tx:"Exploring SF",tm:"",ic:""}],s:"San Francisco",tip:""}],
-"2026-07-09":[{id:uid(),t:"Prep for Yosemite",ty:"rs",a:[{tx:"Pack for Yosemite/Sequoia",tm:"",ic:"🎒"},{tx:"Download offline maps",tm:"",ic:""}],s:"San Francisco",tip:""}],
-"2026-07-10":[{id:uid(),t:"Yosemite Day 1",ty:"pk",a:[{tx:"Drive SF to Yosemite",tm:"Early AM",ic:"🚗"},{tx:"Tunnel View panorama",tm:"",ic:"🏔️"},{tx:"Yosemite Falls trail",tm:"",ic:""},{tx:"Valley shuttle tour",tm:"Afternoon",ic:""},{tx:"Glacier Point sunset",tm:"Evening",ic:""}],s:"Yosemite area",tip:"Arrive before 9 AM!"}],
-"2026-07-11":[{id:uid(),t:"Yosemite + Sequoia",ty:"pk",a:[{tx:"Mariposa Grove sequoias",tm:"Morning",ic:"🌲"},{tx:"Drive to Sequoia NP",tm:"Afternoon",ic:"🚗"}],s:"Sequoia area",tip:"Free grove shuttle"}],
-"2026-07-12":[{id:uid(),t:"Sequoia NP + Home",ty:"pk",a:[{tx:"General Sherman Tree",tm:"Early AM",ic:"🌲"},{tx:"Tunnel Log",tm:"",ic:""},{tx:"Moro Rock panorama",tm:"",ic:""},{tx:"Drive back to SF",tm:"Afternoon",ic:"🚗"}],s:"San Francisco",tip:"Congress Trail is stunning"}],
-"2026-07-13":[{id:uid(),t:"Recovery Day",ty:"rs",a:[{tx:"Rest and recover",tm:"",ic:""}],s:"San Francisco",tip:""}],
-"2026-07-14":[{id:uid(),t:"Last Full Day",ty:"sf",a:[{tx:"Farewell activities",tm:"",ic:"💛"}],s:"San Francisco",tip:""}],
-"2026-07-15":[{id:uid(),t:"Departure",ty:"sf",a:[{tx:"Fly home",tm:"",ic:"✈️"}],s:"",tip:""}],
-};
+// Default data — only used if Firebase has no data yet.
+// All itinerary edits are saved in Firebase Realtime Database under "days".
+const DD=(function(){
+  const d={};
+  const start=new Date(2026,5,15),end=new Date(2026,6,15);
+  for(let dt=new Date(start);dt<=end;dt.setDate(dt.getDate()+1)){
+    const k=dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");
+    d[k]=[{id:uid(),t:"Day "+(Math.round((dt-start)/86400000)+1),ty:"sf",a:[{tx:"",tm:"",ic:""}],s:"",tip:""}];
+  }
+  return d;
+})();
 
 let S={days:JSON.parse(JSON.stringify(DD)),joins:{},user:null,sel:null,month:5,edId:null,eiIdx:null,cc:null,authState:"loading"};
 
@@ -265,8 +243,8 @@ function makeICS(dk2){
 }
 
 // Edit functions (admin only)
-function updCard(dk2,cid,f,v){S.days[dk2].forEach(c=>{if(c.id===cid)c[f]=v;});saveDays();render();}
-function updAct(dk2,cid,i,f,v){S.days[dk2].forEach(c=>{if(c.id===cid)c.a[i][f]=v;});saveDays();render();}
+function updCard(dk2,cid,f,v,noRender){S.days[dk2].forEach(c=>{if(c.id===cid)c[f]=v;});saveDays();if(!noRender)render();}
+function updAct(dk2,cid,i,f,v,noRender){S.days[dk2].forEach(c=>{if(c.id===cid)c.a[i][f]=v;});saveDays();if(!noRender)render();}
 function rmAct(dk2,cid,i){S.days[dk2].forEach(c=>{if(c.id===cid)c.a.splice(i,1);});S.eiIdx=null;saveDays();render();}
 function addAct(dk2,cid){S.days[dk2].forEach(c=>{if(c.id===cid)c.a.push({tx:"New activity",tm:"",ic:""});});saveDays();render();}
 function addCard(dk2){const nid=uid();if(!S.days[dk2])S.days[dk2]=[];S.days[dk2].push({id:nid,t:"New card",ty:"sf",a:[{tx:"Activity",tm:"",ic:""}],s:"",tip:""});S.edId=nid;saveDays();render();}
@@ -303,8 +281,14 @@ function h(tag,at,...kids){
   });return el;
 }
 
+let _renderTimer=null;
+function debouncedRender(){if(_renderTimer)clearTimeout(_renderTimer);_renderTimer=setTimeout(render,50);}
+
 function render(){
+  const scrollY=window.scrollY;
   const app=document.getElementById("app");app.innerHTML="";
+  // Restore scroll after DOM update
+  requestAnimationFrame(()=>window.scrollTo(0,scrollY));
 
   // Auth states
   if(S.authState==="loading"){app.appendChild(h("div",{style:{textAlign:"center",padding:"80px 20px",color:"#888"}},"Loading..."));return;}
@@ -401,7 +385,7 @@ function render(){
       // Header
       const hl=h("div",{style:{flex:"1"}});
       hl.appendChild(h("div",{className:"crd-ty",style:{color:stc.dt}},stc.lb));
-      if(isEd){const ti=h("input",{value:card.t});ti.style.cssText="width:100%;border:1px solid #ddd;border-radius:4px;padding:3px 6px;font-size:14px;font-weight:700;outline:none";ti.addEventListener("input",e=>updCard(S.sel,card.id,"t",e.target.value));const tw=h("div",{className:"crd-t"});tw.appendChild(ti);hl.appendChild(tw);}
+      if(isEd){const ti=h("input",{value:card.t});ti.style.cssText="width:100%;border:1px solid #ddd;border-radius:4px;padding:3px 6px;font-size:14px;font-weight:700;outline:none";ti.addEventListener("input",e=>updCard(S.sel,card.id,"t",e.target.value,true));const tw=h("div",{className:"crd-t"});tw.appendChild(ti);hl.appendChild(tw);}
       else hl.appendChild(h("div",{className:"crd-t"},card.t));
 
       const hb=h("div",{className:"cbtns"});
@@ -420,8 +404,8 @@ function render(){
           const rw=h("div");
           const er=h("div",{className:"aed"},
             h("button",{className:"ibtn",onClick:()=>{S.eiIdx=sp?null:pk;render();}},act.ic||"🔵"),
-            (()=>{const inp=h("input",{className:"tmi",value:act.tm,placeholder:"Time"});inp.addEventListener("input",e=>updAct(S.sel,card.id,i,"tm",e.target.value));return inp;})(),
-            (()=>{const inp=h("input",{className:"txi",value:act.tx});inp.addEventListener("input",e=>updAct(S.sel,card.id,i,"tx",e.target.value));return inp;})(),
+            (()=>{const inp=h("input",{className:"tmi",value:act.tm,placeholder:"Time"});inp.addEventListener("input",e=>updAct(S.sel,card.id,i,"tm",e.target.value,true));return inp;})(),
+            (()=>{const inp=h("input",{className:"txi",value:act.tx});inp.addEventListener("input",e=>updAct(S.sel,card.id,i,"tx",e.target.value,true));return inp;})(),
             h("button",{className:"rbtn",onClick:()=>rmAct(S.sel,card.id,i)},"✕")
           );
           rw.appendChild(er);
@@ -441,13 +425,13 @@ function render(){
       // Stay
       if(card.s||isEd){
         const sb=h("div",{className:"sbox"},h("div",{className:"slb"},"🏨 Staying"));
-        if(isEd){const si=h("input",{className:"sinp",value:card.s,placeholder:"Hotel / Airbnb..."});si.addEventListener("input",e=>updCard(S.sel,card.id,"s",e.target.value));sb.appendChild(si);}
+        if(isEd){const si=h("input",{className:"sinp",value:card.s,placeholder:"Hotel / Airbnb..."});si.addEventListener("input",e=>updCard(S.sel,card.id,"s",e.target.value,true));sb.appendChild(si);}
         else sb.appendChild(h("div",{className:"svl"},card.s||"Not set"));
         cr.appendChild(sb);
       }
 
       // Tip
-      if(isEd){const tw=h("div",{style:{marginBottom:"10px"}},h("div",{className:"slb"},"💡 Tip"));const ti=h("input",{className:"sinp",value:card.tip||"",placeholder:"Add a tip..."});ti.addEventListener("input",e=>updCard(S.sel,card.id,"tip",e.target.value));tw.appendChild(ti);cr.appendChild(tw);}
+      if(isEd){const tw=h("div",{style:{marginBottom:"10px"}},h("div",{className:"slb"},"💡 Tip"));const ti=h("input",{className:"sinp",value:card.tip||"",placeholder:"Add a tip..."});ti.addEventListener("input",e=>updCard(S.sel,card.id,"tip",e.target.value,true));tw.appendChild(ti);cr.appendChild(tw);}
       else if(card.tip)cr.appendChild(h("div",{className:"tipb"},"💡 "+card.tip));
 
       // Remove (admin)
