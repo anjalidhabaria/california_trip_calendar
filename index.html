@@ -83,16 +83,20 @@ const FIREBASE_CONFIG = {
   projectId: "california-trip-calendar-2026"
 };
 
-const APPROVED_EMAILS = [
-  "anjalidhabaria@gmail.com",
-  // Add family/friends emails below:
-  // "mom@gmail.com",
-  // "dad@gmail.com",
-];
+// Emails are stored in Firebase, not in code.
+// To set up: go to Firebase Console > Realtime Database and manually add:
+//   access/approved/0: "email1@gmail.com"
+//   access/approved/1: "email2@gmail.com"
+//   access/admins/0: "youremail@gmail.com"
+//
+// Or run this in browser console ONCE after first sign-in to seed them:
+//   firebase.database().ref("access").set({
+//     approved: ["you@gmail.com", "mom@gmail.com", "dad@gmail.com"],
+//     admins: ["you@gmail.com"]
+//   });
 
-const ADMIN_EMAILS = [
-  "anjalidhabaria@gmail.com",
-];
+let APPROVED_EMAILS = [];
+let ADMIN_EMAILS = [];
 // ══════════════════════════════════════════════════
 
 let db=null,auth=null,useFB=false;
@@ -153,19 +157,45 @@ let S={days:JSON.parse(JSON.stringify(DD)),joins:{},user:null,sel:null,month:5,e
 function isAdmin(){return S.user&&ADMIN_EMAILS.indexOf(S.user.email)>=0;}
 function isApproved(){return S.user&&APPROVED_EMAILS.indexOf(S.user.email)>=0;}
 
+function checkAccess(){
+  if(S.user&&isApproved()){S.authState="ok";loadData();}
+  else if(S.user){S.authState="denied";}
+  else{S.authState="login";}
+  render();
+}
+
 function init(){
   if(useFB){
-    auth.onAuthStateChanged(function(u){
-      S.user=u;
-      if(u&&isApproved()){S.authState="ok";loadData();}
-      else if(u){S.authState="denied";}
-      else{S.authState="login";}
-      render();
+    // Load access lists from Firebase first
+    db.ref("access").once("value").then(function(snap){
+      const val=snap.val();
+      if(val){
+        APPROVED_EMAILS=val.approved||[];
+        ADMIN_EMAILS=val.admins||[];
+      }
+      // Then listen for auth
+      auth.onAuthStateChanged(function(u){
+        S.user=u;
+        checkAccess();
+      });
+    }).catch(function(){
+      // If access node doesn't exist yet, allow first user to set up
+      auth.onAuthStateChanged(function(u){
+        S.user=u;
+        if(u){
+          // First user becomes admin — seed the access list
+          APPROVED_EMAILS=[u.email];
+          ADMIN_EMAILS=[u.email];
+          db.ref("access").set({approved:[u.email],admins:[u.email]});
+          S.authState="ok";loadData();
+        }else{S.authState="login";}
+        render();
+      });
     });
   }else{
-    // Local mode - no auth
     const n=localStorage.getItem("t_name");
     S.user=n?{displayName:n,email:"local@local"}:null;
+    APPROVED_EMAILS=["local@local"];ADMIN_EMAILS=["local@local"];
     S.authState=n?"ok":"login";
     if(n)loadData();
     render();
@@ -242,6 +272,21 @@ function addAct(dk2,cid){S.days[dk2].forEach(c=>{if(c.id===cid)c.a.push({tx:"New
 function addCard(dk2){const nid=uid();if(!S.days[dk2])S.days[dk2]=[];S.days[dk2].push({id:nid,t:"New card",ty:"sf",a:[{tx:"Activity",tm:"",ic:""}],s:"",tip:""});S.edId=nid;saveDays();render();}
 function rmCard(dk2,cid){S.days[dk2]=S.days[dk2].filter(c=>c.id!==cid);if(!S.days[dk2].length)S.days[dk2]=[{id:uid(),t:"Free Day",ty:"rs",a:[],s:"",tip:""}];S.cc=null;S.edId=null;saveDays();render();}
 
+// Member management (admin only)
+function addMember(email){
+  if(!email||!email.includes("@"))return;
+  email=email.trim().toLowerCase();
+  if(APPROVED_EMAILS.indexOf(email)<0)APPROVED_EMAILS.push(email);
+  if(useFB)db.ref("access/approved").set(APPROVED_EMAILS);
+  render();
+}
+function removeMember(email){
+  APPROVED_EMAILS=APPROVED_EMAILS.filter(e=>e!==email);
+  if(useFB)db.ref("access/approved").set(APPROVED_EMAILS);
+  render();
+}
+S.showMembers=false;
+
 // DOM helper
 function h(tag,at,...kids){
   const el=document.createElement(tag);
@@ -293,8 +338,35 @@ function render(){
     h("div",{style:{fontSize:"28px"}},"🌉"),
     h("h1",null,"California 2026"),
     h("div",{className:"sub"},"Jun 15 – Jul 15 • Family Trip"),
-    h("div",{className:"ubadge"},"👤 "+uname+(admin?" (admin)":""),h("span",{className:"signout",onClick:doLogout},"sign out"))
+    h("div",{className:"ubadge"},"👤 "+uname+(admin?" (admin)":""),h("span",{className:"signout",onClick:doLogout},"sign out")),
+    admin?h("div",{style:{marginTop:"6px"}},h("button",{style:{fontSize:"10px",padding:"3px 12px",borderRadius:"12px",border:"1px solid #ddd",background:"#fff",cursor:"pointer",color:"#888",fontFamily:"Outfit"},onClick:()=>{S.showMembers=!S.showMembers;render();}},"👥 Manage Members")):null
   ));
+
+  // Members panel (admin only)
+  if(admin&&S.showMembers){
+    const mp=h("div",{className:"crd",style:{borderColor:"#3b82f6",marginBottom:"14px"}});
+    mp.appendChild(h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}},
+      h("div",{style:{fontSize:"13px",fontWeight:"700"}},"👥 Approved Members"),
+      h("button",{className:"bcls",onClick:()=>{S.showMembers=false;render();}},"✕")
+    ));
+    APPROVED_EMAILS.forEach(email=>{
+      const isMe=S.user&&S.user.email===email;
+      const isAdm=ADMIN_EMAILS.indexOf(email)>=0;
+      mp.appendChild(h("div",{style:{display:"flex",alignItems:"center",gap:"6px",padding:"5px 8px",marginBottom:"3px",borderRadius:"6px",background:"#f8f9fb",border:"1px solid #eee"}},
+        h("span",{style:{flex:"1",fontSize:"12px",color:"#333"}},email),
+        isAdm?h("span",{style:{fontSize:"8px",background:"#dbeafe",color:"#3b82f6",padding:"1px 6px",borderRadius:"8px",fontWeight:"600"}},"admin"):null,
+        !isMe?h("button",{style:{fontSize:"9px",background:"#fee2e2",border:"none",borderRadius:"4px",padding:"2px 8px",color:"#dc2626",cursor:"pointer"},onClick:()=>removeMember(email)},"remove"):null
+      ));
+    });
+    const addRow=h("div",{style:{display:"flex",gap:"4px",marginTop:"8px"}});
+    const emailInput=h("input",{placeholder:"email@gmail.com",style:{flex:"1",border:"1px solid #ddd",borderRadius:"6px",padding:"6px 8px",fontSize:"12px",outline:"none"}});
+    const addBtn=h("button",{style:{padding:"6px 14px",borderRadius:"6px",border:"none",background:"#3b82f6",color:"#fff",fontSize:"11px",fontWeight:"600",cursor:"pointer"},onClick:()=>{addMember(emailInput.value);emailInput.value="";}},"+ Add");
+    emailInput.addEventListener("keydown",e=>{if(e.key==="Enter"){addMember(emailInput.value);emailInput.value="";}});
+    addRow.appendChild(emailInput);addRow.appendChild(addBtn);
+    mp.appendChild(addRow);
+    mp.appendChild(h("p",{style:{fontSize:"9px",color:"#aaa",marginTop:"6px"}},"Only approved emails can sign in and view the calendar."));
+    app.appendChild(mp);
+  }
 
   // Legend
   app.appendChild(h("div",{className:"leg"},...Object.keys(T).map(k=>h("div",{className:"leg-i"},h("div",{className:"leg-d",style:{background:T[k].dt}}),T[k].lb))));
