@@ -136,7 +136,7 @@ function isAdmin(){return S.user&&ADMIN_EMAILS.indexOf(S.user.email)>=0;}
 function isApproved(){return S.user&&APPROVED_EMAILS.indexOf(S.user.email)>=0;}
 
 function checkAccess(){
-  if(S.user&&isApproved()){S.authState="ok";loadData();}
+  if(S.user&&isApproved()){S.authState="ok";loadData();loadRequests();}
   else if(S.user){S.authState="denied";}
   else{S.authState="login";}
   render();
@@ -308,6 +308,26 @@ function removeMember(email){
   render();
 }
 S.showMembers=false;
+S.requests={};
+S.requestSent=false;
+
+function loadRequests(){
+  if(useFB)dbOn("requests",function(v){S.requests=v||{};render();});
+}
+function requestAccess(){
+  if(!S.user||!useFB)return;
+  db.ref("requests/"+S.user.uid).set({email:S.user.email,name:S.user.displayName||"",time:Date.now()});
+  S.requestSent=true;render();
+}
+function approveRequest(ruid,email){
+  addMember(email);
+  if(useFB)db.ref("requests/"+ruid).remove();
+  delete S.requests[ruid];render();
+}
+function denyRequest(ruid){
+  if(useFB)db.ref("requests/"+ruid).remove();
+  delete S.requests[ruid];render();
+}
 
 // DOM helper
 function h(tag,at,...kids){
@@ -353,7 +373,15 @@ function render(){
       h("h2",null,"Access Required"),
       h("p",null,"You're signed in as:"),
       h("p",{className:"email"},S.user.email),
-      h("p",null,"This calendar is private. Ask the organizer to add your email to the approved list."),
+      S.requestSent?
+        h("div",{style:{padding:"12px 20px",background:"#f0fdf4",border:"1px solid #86efac",borderRadius:"10px",margin:"16px auto",maxWidth:"280px"}},
+          h("p",{style:{color:"#16a34a",fontSize:"13px",fontWeight:"600",margin:"0 0 4px"}},"✓ Access requested!"),
+          h("p",{style:{color:"#555",fontSize:"11px",margin:"0"}},"The organizer will be notified and can approve you.")
+        ):
+        h("div",{style:{maxWidth:"280px",margin:"16px auto"}},
+          h("p",{style:{color:"#888",fontSize:"12px",marginBottom:"12px"}},"This calendar is private. Request access and the organizer will be notified."),
+          h("button",{style:{width:"100%",padding:"12px",borderRadius:"10px",border:"none",background:"#3b82f6",color:"#fff",fontSize:"14px",fontWeight:"600",cursor:"pointer"},onClick:requestAccess},"📩 Request Access")
+        ),
       h("button",{className:"gbtn",style:{maxWidth:"200px",margin:"10px auto"},onClick:doLogout},"Sign out")
     ));return;
   }
@@ -367,7 +395,7 @@ function render(){
     h("h1",null,"California 2026"),
     h("div",{className:"sub"},"Jun 15 – Jul 15 • Family Trip"),
     h("div",{className:"ubadge"},"👤 "+uname+(admin?" (admin)":""),h("span",{className:"signout",onClick:doLogout},"sign out")),
-    admin?h("div",{style:{marginTop:"6px"}},h("button",{style:{fontSize:"10px",padding:"3px 12px",borderRadius:"12px",border:"1px solid #ddd",background:"#fff",cursor:"pointer",color:"#888",fontFamily:"Outfit"},onClick:()=>{S.showMembers=!S.showMembers;render();}},"👥 Manage Members")):null
+    admin?h("div",{style:{marginTop:"6px"}},h("button",{style:{fontSize:"10px",padding:"3px 12px",borderRadius:"12px",border:"1px solid #ddd",background:"#fff",cursor:"pointer",color:"#888",fontFamily:"Outfit",position:"relative"},onClick:()=>{S.showMembers=!S.showMembers;render();}},"👥 Manage Members",Object.keys(S.requests).length>0?h("span",{style:{position:"absolute",top:"-6px",right:"-6px",background:"#dc2626",color:"#fff",fontSize:"9px",fontWeight:"700",padding:"1px 5px",borderRadius:"10px",minWidth:"14px",textAlign:"center"}},String(Object.keys(S.requests).length)):null)):null
   ));
 
   // Members panel (admin only)
@@ -393,6 +421,26 @@ function render(){
     addRow.appendChild(emailInput);addRow.appendChild(addBtn);
     mp.appendChild(addRow);
     mp.appendChild(h("p",{style:{fontSize:"9px",color:"#aaa",marginTop:"6px"}},"Only approved emails can sign in and view the calendar."));
+
+    // Pending requests
+    const reqKeys=Object.keys(S.requests);
+    if(reqKeys.length>0){
+      mp.appendChild(h("div",{style:{borderTop:"1px solid #eee",marginTop:"12px",paddingTop:"12px"}}));
+      mp.appendChild(h("div",{style:{fontSize:"12px",fontWeight:"700",marginBottom:"8px",color:"#ea580c"}},"📩 Pending Requests ("+reqKeys.length+")"));
+      reqKeys.forEach(ruid=>{
+        const req=S.requests[ruid];
+        if(!req)return;
+        mp.appendChild(h("div",{style:{display:"flex",alignItems:"center",gap:"6px",padding:"6px 8px",marginBottom:"4px",borderRadius:"6px",background:"#fff7ed",border:"1px solid #fed7aa"}},
+          h("div",{style:{flex:"1",minWidth:"0"}},
+            h("div",{style:{fontSize:"12px",fontWeight:"600",color:"#333"}},req.name||"Unknown"),
+            h("div",{style:{fontSize:"10px",color:"#888"}},req.email)
+          ),
+          h("button",{style:{fontSize:"10px",padding:"4px 10px",borderRadius:"6px",border:"none",background:"#16a34a",color:"#fff",fontWeight:"600",cursor:"pointer"},onClick:()=>approveRequest(ruid,req.email)},"✓ Approve"),
+          h("button",{style:{fontSize:"10px",padding:"4px 10px",borderRadius:"6px",border:"1px solid #ddd",background:"#fff",color:"#888",cursor:"pointer"},onClick:()=>denyRequest(ruid)},"✕")
+        ));
+      });
+    }
+
     app.appendChild(mp);
   }
 
