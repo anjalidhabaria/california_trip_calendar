@@ -180,13 +180,18 @@ function init(){
   }
 }
 
-let _editing=false;let _editTimer=null;
-function startEditing(){_editing=true;clearTimeout(_editTimer);_editTimer=setTimeout(function(){_editing=false;},3000);}
+let _editing=false;let _saveTimer=null;
+function debouncedSaveDays(){
+  _editing=true;
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(function(){dbSet("days",S.days);_editing=false;},1500);
+}
 function loadData(){
   dbOn("days",function(v){if(v&&!_editing){S.days=v;render();}});
-  dbOn("joins",function(v){if(v){S.joins=v;if(!_editing)render();}});
+  dbOn("joins",function(v){if(v&&!_editing){S.joins=v;render();}});
 }
-function saveDays(){startEditing();dbSet("days",S.days);}
+function saveDays(){debouncedSaveDays();}
+function saveDaysNow(){_editing=true;dbSet("days",S.days);setTimeout(function(){_editing=false;},2000);}
 function saveJoins(){dbSet("joins",S.joins);}
 
 function doLogin(){
@@ -245,12 +250,12 @@ function makeICS(dk2){
 }
 
 // Edit functions (admin only)
-function updCard(dk2,cid,f,v,noRender){S.days[dk2].forEach(c=>{if(c.id===cid)c[f]=v;});saveDays();if(!noRender)render();}
-function updAct(dk2,cid,i,f,v,noRender){S.days[dk2].forEach(c=>{if(c.id===cid)c.a[i][f]=v;});saveDays();if(!noRender)render();}
-function rmAct(dk2,cid,i){S.days[dk2].forEach(c=>{if(c.id===cid)c.a.splice(i,1);});S.eiIdx=null;saveDays();render();}
-function addAct(dk2,cid){S.days[dk2].forEach(c=>{if(c.id===cid)c.a.push({tx:"New activity",tm:"",ic:""});});saveDays();render();}
-function addCard(dk2){const nid=uid();if(!S.days[dk2])S.days[dk2]=[];S.days[dk2].push({id:nid,t:"New card",ty:"sf",a:[{tx:"Activity",tm:"",ic:""}],s:"",tip:""});S.edId=nid;saveDays();render();}
-function rmCard(dk2,cid){S.days[dk2]=S.days[dk2].filter(c=>c.id!==cid);if(!S.days[dk2].length)S.days[dk2]=[{id:uid(),t:"Free Day",ty:"rs",a:[],s:"",tip:""}];S.cc=null;S.edId=null;saveDays();render();}
+function updCard(dk2,cid,f,v,noRender){S.days[dk2].forEach(c=>{if(c.id===cid)c[f]=v;});if(noRender){debouncedSaveDays();}else{saveDaysNow();render();}}
+function updAct(dk2,cid,i,f,v,noRender){S.days[dk2].forEach(c=>{if(c.id===cid)c.a[i][f]=v;});if(noRender){debouncedSaveDays();}else{saveDaysNow();render();}}
+function rmAct(dk2,cid,i){S.days[dk2].forEach(c=>{if(c.id===cid)c.a.splice(i,1);});S.eiIdx=null;saveDaysNow();render();}
+function addAct(dk2,cid){S.days[dk2].forEach(c=>{if(c.id===cid)c.a.push({tx:"New activity",tm:"",ic:""});});saveDaysNow();render();}
+function addCard(dk2){const nid=uid();if(!S.days[dk2])S.days[dk2]=[];S.days[dk2].push({id:nid,t:"New card",ty:"sf",a:[{tx:"Activity",tm:"",ic:""}],s:"",tip:""});S.edId=nid;saveDaysNow();render();}
+function rmCard(dk2,cid){S.days[dk2]=S.days[dk2].filter(c=>c.id!==cid);if(!S.days[dk2].length)S.days[dk2]=[{id:uid(),t:"Free Day",ty:"rs",a:[],s:"",tip:""}];S.cc=null;S.edId=null;saveDaysNow();render();}
 
 // Member management (admin only)
 function addMember(email){
