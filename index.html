@@ -186,8 +186,35 @@ function debouncedSaveDays(){
   clearTimeout(_saveTimer);
   _saveTimer=setTimeout(function(){dbSet("days",S.days);_editing=false;},1500);
 }
+function fixArrays(days){
+  if(!days||typeof days!=="object")return days;
+  const fixed={};
+  Object.keys(days).forEach(dk=>{
+    let cards=days[dk];
+    // Firebase converts arrays to objects with numeric keys
+    if(cards&&typeof cards==="object"&&!Array.isArray(cards)){
+      cards=Object.values(cards);
+    }
+    if(Array.isArray(cards)){
+      cards=cards.filter(c=>c!=null).map(c=>{
+        // Also fix activities array
+        if(c.a&&typeof c.a==="object"&&!Array.isArray(c.a)){
+          c.a=Object.values(c.a);
+        }
+        if(!c.a)c.a=[];
+        if(!c.id)c.id=uid();
+        return c;
+      });
+    }else{
+      cards=[];
+    }
+    fixed[dk]=cards;
+  });
+  return fixed;
+}
+
 function loadData(){
-  dbOn("days",function(v){if(v&&!_editing){S.days=v;render();}});
+  dbOn("days",function(v){if(v&&!_editing){S.days=fixArrays(v);render();}});
   dbOn("joins",function(v){if(v&&!_editing){S.joins=v;render();}});
 }
 function saveDays(){debouncedSaveDays();}
@@ -254,8 +281,18 @@ function updCard(dk2,cid,f,v,noRender){S.days[dk2].forEach(c=>{if(c.id===cid)c[f
 function updAct(dk2,cid,i,f,v,noRender){S.days[dk2].forEach(c=>{if(c.id===cid)c.a[i][f]=v;});if(noRender){debouncedSaveDays();}else{saveDaysNow();render();}}
 function rmAct(dk2,cid,i){S.days[dk2].forEach(c=>{if(c.id===cid)c.a.splice(i,1);});S.eiIdx=null;saveDaysNow();render();}
 function addAct(dk2,cid){S.days[dk2].forEach(c=>{if(c.id===cid)c.a.push({tx:"New activity",tm:"",ic:""});});saveDaysNow();render();}
-function addCard(dk2){const nid=uid();if(!S.days[dk2])S.days[dk2]=[];S.days[dk2].push({id:nid,t:"New card",ty:"sf",a:[{tx:"Activity",tm:"",ic:""}],s:"",tip:""});S.edId=nid;saveDaysNow();render();}
-function rmCard(dk2,cid){S.days[dk2]=S.days[dk2].filter(c=>c.id!==cid);if(!S.days[dk2].length)S.days[dk2]=[{id:uid(),t:"Free Day",ty:"rs",a:[],s:"",tip:""}];S.cc=null;S.edId=null;saveDaysNow();render();}
+function addCard(dk2){
+  const nid=uid();
+  if(!S.days)S.days={};
+  if(!S.days[dk2]||!Array.isArray(S.days[dk2]))S.days[dk2]=[];
+  S.days[dk2].push({id:nid,t:"New card",ty:"sf",a:[{tx:"Activity",tm:"",ic:""}],s:"",tip:""});
+  S.edId=nid;saveDaysNow();render();
+}
+function rmCard(dk2,cid){
+  if(!S.days[dk2])return;
+  S.days[dk2]=S.days[dk2].filter(c=>c.id!==cid);
+  S.cc=null;S.edId=null;saveDaysNow();render();
+}
 
 // Member management (admin only)
 function addMember(email){
@@ -372,7 +409,7 @@ function render(){
   for(let d=1;d<=nd;d++){
     const dk2=dkey(S.month,d),cards=S.days[dk2],first=cards&&cards[0],tc=first?T[first.ty]:null;
     const isSel=S.sel===dk2,ji=getJoinInfo(dk2),jnames=Object.values(ji),tp=totalPeople(dk2);
-    cg.appendChild(h("div",{className:"cc"+(isSel?" sel":"")+(cards&&cards.length?"":" empty"),onClick:()=>{if(!cards&&!admin)return;S.sel=S.sel===dk2?null:dk2;S.edId=null;S.eiIdx=null;S.cc=null;render();}},
+    cg.appendChild(h("div",{className:"cc"+(isSel?" sel":"")+(cards&&cards.length?"":" empty"),onClick:()=>{S.sel=S.sel===dk2?null:dk2;S.edId=null;S.eiIdx=null;S.cc=null;render();}},
       h("div",{className:"dn"},tc?h("div",{className:"leg-d",style:{background:tc.dt}}):null,String(d),cards&&cards.length>1?h("span",{className:"mbdg"},String(cards.length)):null,tp>0?h("span",{className:"hcnt"},String(tp)):null),
       first?h("div",{className:"dt2"},(tc?tc.ic:"")+" "+first.t):null,
       jnames.length>0?h("div",{className:"jrs"},...jnames.slice(0,3).map(v=>h("span",{style:{background:tc?tc.dt:"#999"}},v.name))):null
