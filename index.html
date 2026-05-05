@@ -372,7 +372,7 @@ function render(){
   for(let d=1;d<=nd;d++){
     const dk2=dkey(S.month,d),cards=S.days[dk2],first=cards&&cards[0],tc=first?T[first.ty]:null;
     const isSel=S.sel===dk2,ji=getJoinInfo(dk2),jnames=Object.values(ji),tp=totalPeople(dk2);
-    cg.appendChild(h("div",{className:"cc"+(isSel?" sel":"")+(cards?"":" empty"),onClick:()=>{if(!cards)return;S.sel=S.sel===dk2?null:dk2;S.edId=null;S.eiIdx=null;S.cc=null;render();}},
+    cg.appendChild(h("div",{className:"cc"+(isSel?" sel":"")+(cards&&cards.length?"":" empty"),onClick:()=>{if(!cards&&!admin)return;S.sel=S.sel===dk2?null:dk2;S.edId=null;S.eiIdx=null;S.cc=null;render();}},
       h("div",{className:"dn"},tc?h("div",{className:"leg-d",style:{background:tc.dt}}):null,String(d),cards&&cards.length>1?h("span",{className:"mbdg"},String(cards.length)):null,tp>0?h("span",{className:"hcnt"},String(tp)):null),
       first?h("div",{className:"dt2"},(tc?tc.ic:"")+" "+first.t):null,
       jnames.length>0?h("div",{className:"jrs"},...jnames.slice(0,3).map(v=>h("span",{style:{background:tc?tc.dt:"#999"}},v.name))):null
@@ -381,11 +381,14 @@ function render(){
   app.appendChild(h("div",{className:"cal"},h("div",{className:"calhd"},...DW.map(d=>h("div",null,d))),cg));
 
   // Detail
-  if(S.sel&&S.days[S.sel]){
+  if(S.sel){
+    const selCards=S.days[S.sel];
+    const hasCards=selCards&&selCards.length>0;
     const dw=h("div",{className:"ai"});
     dw.appendChild(h("div",{className:"ddate"},fd(pd(S.sel))));
 
-    S.days[S.sel].forEach(card=>{
+    if(hasCards){
+    selCards.forEach(card=>{
       const stc=T[card.ty]||T.sf,isEd=admin&&S.edId===card.id;
       const cr=h("div",{className:"crd",style:{borderColor:stc.br}});
 
@@ -448,9 +451,13 @@ function render(){
       }
       dw.appendChild(cr);
     });
+    }else{
+      // Empty day - no cards
+      dw.appendChild(h("div",{style:{textAlign:"center",padding:"20px",color:"#bbb",fontSize:"13px"}},"No plans yet for this day"));
+    }
 
     // Add card (admin)
-    if(admin)dw.appendChild(h("button",{className:"acb",onClick:()=>addCard(S.sel)},"+  Add another card"));
+    if(admin)dw.appendChild(h("button",{className:"acb",onClick:()=>addCard(S.sel)},"+  Add a card"));
 
     // Join section
     const ji=getJoinInfo(S.sel),myKey=S.user.email,joined=!!ji[myKey],tp=totalPeople(S.sel);
