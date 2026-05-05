@@ -419,8 +419,8 @@ function render(){
 
   // Detail
   if(S.sel){
-    const selCards=S.days[S.sel];
-    const hasCards=selCards&&selCards.length>0;
+    const selCards=Array.isArray(S.days[S.sel])?S.days[S.sel]:[];
+    const hasCards=selCards.length>0;
     const dw=h("div",{className:"ai"});
     dw.appendChild(h("div",{className:"ddate"},fd(pd(S.sel))));
 
@@ -536,7 +536,8 @@ function render(){
   if(!S.sel){
     const hl2=h("div",{className:"hl"},h("h3",null,"Highlights & Trips"));
     Object.keys(S.days).sort().forEach(dk2=>{
-      S.days[dk2].forEach(card=>{
+      const dayCards=Array.isArray(S.days[dk2])?S.days[dk2]:[];
+      dayCards.forEach(card=>{
         if(card.ty==="sf"||card.ty==="rs")return;
         const xtc=T[card.ty]||T.sf,ji=getJoinInfo(dk2),jn=Object.values(ji),tp=totalPeople(dk2);
         hl2.appendChild(h("div",{className:"hli",onClick:()=>{S.sel=dk2;S.month=pd(dk2).getMonth();S.edId=null;render();}},
